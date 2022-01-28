@@ -1,0 +1,16 @@
+---
+- name: Public IP Address Action [{{ public_ip_state }}]
+  azure_rm_publicipaddress:
+    resource_group: "{{ resourcegroup[ public_ip_vars.resource_group_key ].name }}"
+    name: "{{ public_ip_vars.public_ip_name }}"
+    allocation_method: "{{ public_ip_vars.public_ip_allocation_method | default(\"Dynamic\") }}"
+    sku: "{{ public_ip_vars.public_ip_sku | default(\"Basic\") }}"
+    domain_name: "{{ public_ip_vars.domain_name }}"
+    state: "{{ public_ip_state | default(\"present\") }}"
+  register: public_ip_var
+  tags: public_ip
+
+- debug: 
+    var: public_ip_var
+  tags: public_ip
+  when: public_ip_state == "present"

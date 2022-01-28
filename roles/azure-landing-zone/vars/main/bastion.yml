@@ -1,0 +1,35 @@
+---
+bastion_state: present
+
+bastion_sku:
+  basic: Basic
+  standard: Standard
+
+bastion_resource_api:
+  api_version: '2021-03-01'
+  provider: Network
+  resource_type: bastionHosts
+
+bastion_timers:
+  create:
+    delay: 60
+    retries: 10
+  delete:
+    delay: 60
+    retries: 10
+
+bastions:
+  hub:
+    resource_api: "{{ bastion_resource_api }}"
+    resource_group_key: rg_ntw_hub_we_001
+    public_ip_name: pip_ntw_hub_we_bh_001
+    public_ip_sku: "{{ public_ip.sku.standard }}"
+    public_ip_allocation_method: "{{ public_ip.allocation_method.static }}"
+    domain_name: aclub-bastion
+    location_key: region1
+    resource_name: bash_ntw_hub_we_001
+    subnet_key: AzureBastionSubnetHub
+    sku: "{{ bastion_sku.basic }}"
+    timers: "{{ bastion_timers }}"
+    # Min is 2. Valid for Standard sku only
+    scaleUnits: 2

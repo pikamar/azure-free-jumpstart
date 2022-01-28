@@ -1,0 +1,14 @@
+---
+public_ip_state: present
+
+# Configuration variables
+public_ip:
+  state:
+    present: present
+    absent: absent
+  sku:
+    basic: Basic
+    standard: Standard
+  allocation_method:
+    dynamic: Dynamic
+    static: Static

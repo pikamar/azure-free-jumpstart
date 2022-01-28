@@ -1,0 +1,34 @@
+---
+##########################################
+# Wait Task To Desired Resource State
+# Whait Statuses
+# - Deleted
+# - Succeeded
+##########################################
+- name: Wait for Azure Resource Deleted Status
+  azure_rm_resource_info:
+    api_version: "{{ wait_vars.resource_api.api_version }}"
+    resource_group: "{{ resourcegroup[ wait_vars.resource_group_key ].name }}"
+    provider: "{{ wait_vars.resource_api.provider }}"
+    resource_type: "{{ wait_vars.resource_api.resource_type }}"
+    resource_name: "{{ wait_vars.resource_name }}"
+  register: output
+  until: output.response[0].properties.provisioningState is not defined
+  delay: "{{ wait_delay }}"
+  retries: "{{ wait_retries }}"
+  when: wait_status == "Deleted"
+  tags: wait
+
+- name: Wait for Azure Resource Succeeded Status
+  azure_rm_resource_info:
+    api_version: "{{ wait_vars.resource_api.api_version }}"
+    resource_group: "{{ resourcegroup[ wait_vars.resource_group_key ].name }}"
+    provider: "{{ wait_vars.resource_api.provider }}"
+    resource_type: "{{ wait_vars.resource_api.resource_type }}"
+    resource_name: "{{ wait_vars.resource_name }}"
+  register: output
+  until: output.response[0].properties.provisioningState == wait_status
+  delay: "{{ wait_delay }}"
+  retries: "{{ wait_retries }}"
+  when: wait_status == "Succeeded"
+  tags: wait

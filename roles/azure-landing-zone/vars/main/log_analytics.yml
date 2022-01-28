@@ -1,0 +1,244 @@
+---
+loganalytics_state: "present"
+loganalytics_force : no
+az_debug: true
+
+loganalyticsworkspace:
+  central_logs_region1:
+    name: logs
+    resource_group_key: ops_re1
+    location_key: region1
+    retention_in_days: 30
+    sku: per_gb2018
+    intelligence_packs:
+      KeyVault: true
+
+#ok: [localhost] => 
+#  msg:
+#    changed: false
+#    msg: All items completed
+#    results:
+#    - ansible_loop_var: item
+#      changed: false
+#      customer_id: 0737e820-5ae4-4032-ae6f-f1e5cfe214e6
+#      failed: false
+#      id: /subscriptions/123e8dcf-01be-4f6d-b18d-fdd89e62d672/resourcegroups/ops_re1/providers/microsoft.operationalinsights/workspaces/logs
+#      intelligence_packs:
+#      - enabled: false
+#        name: CapacityPerformance
+#      - enabled: false
+#        name: AzureWebAppsAnalytics
+#      - enabled: false
+#        name: BehaviorAnalyticsInsights
+#      - enabled: false
+#        name: Security
+#      - enabled: false
+#        name: Updates
+#      - enabled: false
+#        name: AntiMalware
+#      - enabled: true
+#        name: LogManagement
+#      - enabled: true
+#        name: AzureResources
+#      - enabled: false
+#        name: ChangeTracking
+#      - enabled: false
+#        name: SQLAssessment
+#      - enabled: false
+#        name: SCOMAssessment
+#      - enabled: false
+#        name: ServiceDesk
+#      - enabled: false
+#        name: SQLAssessmentPlus
+#      - enabled: false
+#        name: ADAssessment
+#      - enabled: false
+#        name: AlertManagement
+#      - enabled: false
+#        name: AzureAutomation
+#      - enabled: false
+#        name: WireData
+#      - enabled: false
+#        name: SiteRecovery
+#      - enabled: false
+#        name: Backup
+#      - enabled: false
+#        name: SurfaceHub
+#      - enabled: false
+#        name: NetworkMonitoring
+#      - enabled: false
+#        name: Containers
+#      - enabled: false
+#        name: ContainerInsights
+#      - enabled: false
+#        name: ServiceMap
+#      - enabled: false
+#        name: AzureNetworking
+#      - enabled: false
+#        name: ADReplication
+#      - enabled: false
+#        name: Office365
+#      - enabled: false
+#        name: CompatibilityAssessment
+#      - enabled: false
+#        name: KeyVault
+#      - enabled: false
+#        name: ServiceFabric
+#      - enabled: false
+#        name: DnsAnalytics
+#      - enabled: false
+#        name: ApplicationInsights
+#      - enabled: false
+#        name: WireData2
+#      - enabled: false
+#        name: WaaSUpdateInsights
+#      - enabled: false
+#        name: AgentHealthAssessment
+#      - enabled: false
+#        name: AzureActivity
+#      - enabled: false
+#        name: HDInsight
+#      - enabled: false
+#        name: HDInsightKafka
+#      - enabled: false
+#        name: HDInsightSpark
+#      - enabled: false
+#        name: HDInsightHadoop
+#      - enabled: false
+#        name: AzureCdnCoreAnalytics
+#      - enabled: false
+#        name: HDInsightStorm
+#      - enabled: false
+#        name: HDInsightInteractiveQuery
+#      - enabled: false
+#        name: VMware
+#      - enabled: false
+#        name: SecurityCenterFree
+#      - enabled: false
+#        name: LogicAppsManagement
+#      - enabled: false
+#        name: LogicAppB2B
+#      - enabled: false
+#        name: AzureSQLAnalytics
+#      - enabled: false
+#        name: KeyVaultAnalytics
+#      - enabled: false
+#        name: AzureNSGAnalytics
+#      - enabled: false
+#        name: AzureAppGatewayAnalytics
+#      - enabled: false
+#        name: DeviceHealthProd
+#      - enabled: false
+#        name: WindowsDefenderATP
+#      - enabled: false
+#        name: WindowsDefenderATPStable
+#      - enabled: false
+#        name: InfrastructureInsights
+#      - enabled: false
+#        name: ProcessInvestigator
+#      - enabled: false
+#        name: Microsoft365Analytics
+#      - enabled: false
+#        name: ASRAnalytics
+#      - enabled: false
+#        name: AzureSentinelPrivatePreview
+#      - enabled: false
+#        name: AzureSentinelDSRE
+#      - enabled: false
+#        name: SecurityInsights
+#      - enabled: false
+#        name: SecurityCenterNetworkTraffic
+#      - enabled: false
+#        name: WindowsFirewall
+#      - enabled: false
+#        name: WindowsEventForwarding
+#      - enabled: false
+#        name: InternalWindowsEvent
+#      - enabled: false
+#        name: CustomizedWindowsEventsFiltering
+#      - enabled: false
+#        name: WEFInternalUat
+#      - enabled: false
+#        name: WEFInternal
+#      - enabled: false
+#        name: WEF_10x
+#      - enabled: false
+#        name: WEF_10xDSRE
+#      - enabled: false
+#        name: DHCPActivity
+#      - enabled: false
+#        name: AzureDataFactoryAnalytics
+#      - enabled: false
+#        name: AzureSecurityOfThings
+#      - enabled: false
+#        name: SQLVulnerabilityAssessment
+#      - enabled: false
+#        name: SQLAdvancedThreatProtection
+#      - enabled: false
+#        name: VMInsights
+#      - enabled: false
+#        name: WinLog
+#      - enabled: false
+#        name: NetFlow
+#      invocation:
+#        module_args:
+#          ad_user: null
+#          adfs_authority_url: null
+#          api_profile: latest
+#          append_tags: true
+#          auth_source: auto
+#          cert_validation_mode: null
+#          client_id: null
+#          cloud_environment: AzureCloud
+#          force: false
+#          intelligence_packs: null
+#          location: null
+#          log_mode: null
+#          log_path: null
+#          name: logs
+#          password: null
+#          profile: null
+#          resource_group: ops_re1
+#          retention_in_days: 30
+#          secret: null
+#          sku: per_gb2018
+#          state: present
+#          subscription_id: null
+#          tags: null
+#          tenant: null
+#      item:
+#        key: central_logs_region1
+#        value:
+#          location_key: region1
+#          name: logs
+#          resource_group_key: ops_re1
+#          retention_in_days: 30
+#          sku: per_gb2018
+#      location: westeurope
+#      management_groups: []
+#      name: logs
+#      provisioning_state: Succeeded
+#      public_network_access_for_ingestion: Enabled
+#      public_network_access_for_query: Enabled
+#      retention_in_days: 30
+#      shared_keys:
+#        primary_shared_key: rrXCJsGJZEnEig73AlA2RmPwspLgLTo/C4VEK1a2btrQPGdHGgueovdHaqzaqQP/OWya97No9KrvQMw/a5ceww==
+#        secondary_shared_key: fucCe1FQxdKIHGZRM7o1V9f5me78PKb6UZzx7xgbTOa4LlY9bEHrzlBuHsISb9NEkyUVcbg1WoOy4DOgrszsRw==
+#      sku: pergb2018
+#      type: Microsoft.OperationalInsights/workspaces
+#      usages:
+#      - current_value: 0.0
+#        limit: -1.0
+#        name:
+#          localized_value: Data Analyzed
+#          value: DataAnalyzed
+#        next_reset_time: '2022-01-03T23:00:00.000Z'
+#        quota_period: P1D
+#        unit: Bytes
+#      workspace_capping:
+#        daily_quota_gb: -1.0
+#        data_ingestion_status: RespectQuota
+#        quota_next_reset_time: Mon, 03 Jan 2022 23:00:00 GMT
+#    skipped: false
+#    warnings:
+#    - Azure API profile latest does not define an entry for LogAnalyticsManagementClient

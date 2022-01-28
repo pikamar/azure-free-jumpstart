@@ -1,0 +1,122 @@
+---
+- name: Set azure regions
+  set_fact:
+    az_regions: "{{ global_settings[0]['regions'][0] }}"
+
+- name: Debug az_regions
+  debug: 
+    msg: "{{ az_regions }}"
+
+- name: Set azure default region
+  set_fact:
+    az_default_regions: "{{ az_regions[global_settings[0]['default_region']] }}"
+
+- name: Debug az_default_regions
+  debug: 
+    msg: "{{ az_default_regions }}"
+
+- name: Set resource groups
+  debug:
+    msg: |
+      Resource Group Name:
+      --------------------------------
+      VNET Key:             {{ item.key }}
+      Region Key:           {{ item.value[0].region }}
+      Region Name:          {{ az_regions[item.value[0].region] }}
+      RG Key:               {{ item.value[0].resource_group_key }}
+      RG Name:              {{ resource_groups[0][item.value[0].resource_group_key][0].name }}
+      Specialsubnets:       {{ item.value[0].specialsubnets }}
+      Subnets:              {{ item.value[0].subnets }}
+      VNET:                 {{ item.value[0].vnet }}
+      VNET address space:   {{ item.value[0].vnet[0].address_space }}
+      VNET Name:            {{ item.value[0].vnet[0].name }}
+      ================================
+  with_items: "{{ vnets[0] | dict2items }}"
+
+- name: Flatten VNET dictionary
+  set_fact:
+    az_vnets: | 
+      {{  az_vnets | default({}) | 
+          combine( 
+            {item.key: {'vnet_cidr': item.value[0].vnet[0].address_space} },
+            {item.key: {'vnet_rg': resource_groups[0][item.value[0].resource_group_key][0].name} },
+            {item.key: {'vnet_name': item.value[0].vnet[0].name} }, 
+            {item.key: {'vnet_region': az_regions[item.value[0].region]} }, 
+            {item.key: item.value[0].subnets[0] }, {item.key: item.value[0].specialsubnets[0]} , recursive=True )
+      }}
+  with_items: "{{ vnets[0] | dict2items }}"
+
+- name: Debug az_vnets
+  debug: msg="{{ az_vnets }}"
+
+- name: Virtual Network Action [{{ vnet_state }}]
+  azure_rm_virtualnetwork:
+    resource_group: "{{ resource_groups[0][item.value[0].resource_group_key][0].name }}"
+    name: "{{ item.value[0].vnet[0].name }}"
+    address_prefixes_cidr: "{{ item.value[0].vnet[0].address_space }}"
+    dns_servers: "{{ item.value[0].vnet[0].dns_servers | default([]) }}"
+    tags: "{{ item.value[0].vnet[0].tags | default({}) }}"
+    state: "{{ vnet_state | default('present') }}"
+  with_items: "{{ vnets[0] | dict2items }}"
+
+- name: Set resource groups
+  debug:
+    msg: |
+      Resource Group Name:
+      --------------------------------
+      Peering Key:          {{ item.key }}
+      Peering Name:         {{ item.value[0].name }}
+      VNET "From" Key:      {{ item.value[0].from[0].vnet_key }}
+      VNET "From" Name:     {{ vnets[0][ item.value[0].from[0].vnet_key ][0].vnet[0].name }}
+      VNET "To" Key:        {{ item.value[0].to[0].vnet_key }}
+      VNET "To" Name:       {{ vnets[0][ item.value[0].to[0].vnet_key ][0].vnet[0].name }}
+      RG "From" Key:        {{ vnets[0][ item.value[0].from[0].vnet_key ][0].resource_group_key }}
+      RG "From" Name:       {{ resource_groups[0][ vnets[0][item.value[0].from[0].vnet_key][0].resource_group_key ][0].name }}
+      RG "From" Key:        {{ vnets[0][ item.value[0].to[0].vnet_key ][0].resource_group_key }}
+      RG "To" Name:         {{ resource_groups[0][ vnets[0][item.value[0].to[0].vnet_key][0].resource_group_key ][0].name }}
+      ================================
+  with_items: "{{ vnet_peerings[0] | dict2items }}"
+
+- name: Virtual Network Peering Action [{{ peering_state }}]
+  azure_rm_virtualnetworkpeering:
+    resource_group: "{{ resource_groups[0][ vnets[0][item.value[0].from[0].vnet_key][0].resource_group_key ][0].name }}"
+    virtual_network: "{{ vnets[0][ item.value[0].from[0].vnet_key ][0].vnet[0].name }}"
+    name: "{{ item.value[0].name }}"
+    remote_virtual_network:
+      resource_group: "{{ resource_groups[0][ vnets[0][item.value[0].to[0].vnet_key][0].resource_group_key ][0].name }}"
+      name: "{{ vnets[0][ item.value[0].to[0].vnet_key ][0].vnet[0].name }}"
+    allow_virtual_network_access: "{{ item.value[0].allow_virtual_network_access | default(no) }}"
+    allow_forwarded_traffic: "{{ item.value[0].allow_forwarded_traffic | default(no) }}"
+    allow_gateway_transit: "{{ item.value[0].allow_gateway_transit | default(no) }}"
+    use_remote_gateways: "{{ item.value[0].use_remote_gateways | default(no) }}"
+    state: "{{ peering_state | default('present') }}"
+  when: vnet_state == "present"
+  with_items: "{{ vnet_peerings[0] | dict2items }}"
+
+- name: create variable
+  set_fact:
+    az_subnets: "{{ vnets[0] | get_az_subnets   }}"
+
+- name: Debug az_subnets
+  debug: msg="{{ az_subnets }}"
+
+- name: NSG Action [{{ nsg_state }}]
+  azure_rm_securitygroup: 
+    resource_group: "{{ resource_groups[0][item.resource_group_key][0].name }}"
+    name: "{{ item.nsg_key  }}"
+    rules: "{{ network_security_group_definition[0][item.nsg_key][0]['nsg']  }}"
+    state: "{{ nsg_state | default('present') }}"
+  when: item.nsg_key is defined
+  with_items:
+    - "{{ az_subnets  }}"
+
+- name: Subnet Action [{{ subnet_state }}]
+  azure_rm_subnet:
+    resource_group: "{{ resource_groups[0][item.resource_group_key][0].name }}"
+    virtual_network_name: "{{ item.virtual_network_name }}"
+    name: "{{ item.name }}"
+    address_prefix_cidr: "{{ item.address_prefix_cidr[0] }}"
+    security_group: "{{ item.nsg_key | default() }}"
+    state: "{{ subnet_state | default('present') }}"
+  with_items:
+    - "{{ az_subnets  }}"

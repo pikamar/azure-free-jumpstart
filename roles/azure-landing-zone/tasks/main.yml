@@ -1,0 +1,53 @@
+---
+- include_tasks: resourcegroup.yml
+  tags:
+    - free
+    - resourcegroup
+
+- include_tasks: virtualnetwork.yml
+  tags:
+    - free
+    - virtualnetwork
+
+- include_tasks: subnets.yml
+  tags:
+    - free
+    - subnets
+
+- name: Create Public IP For Bastion Host
+  include_tasks:
+    file: public_ip.yml
+  vars:
+    public_ip_vars: "{{ bastions.hub }}"
+    public_ip_state: present
+  tags:
+    - public_ip
+
+- name: Create Bastion Host
+  include_tasks:
+    file: bastion.yml
+  vars:
+    bastion_vars: "{{ bastions.hub }}"
+    bastion_state: present
+  tags:
+    - bastion
+
+- name: Wait For Bastion Host To Be Deleted
+  include_tasks:
+    file: wait.yml
+  vars:
+    wait_vars: "{{ bastions.hub }}"
+    wait_status: "Succeeded"
+    wait_delay: "{{ bastions.hub.timers.delete.delay }}"
+    wait_retries: "{{ bastions.hub.timers.delete.retries }}"
+  tags:
+    - wait
+
+#- name: Create Public IP For Bastion Host
+#  include_tasks:
+#    file: public_ip.yml
+#  vars:
+#    public_ip_vars: "{{ bastions.hub }}"
+#    public_ip_state: absent
+#  tags:
+#    - public_ip

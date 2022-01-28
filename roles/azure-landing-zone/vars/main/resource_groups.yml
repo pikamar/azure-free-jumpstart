@@ -1,0 +1,11 @@
+---
+rg_force_delete_nonempty: "no"
+rg_state: "present"
+
+resourcegroup:
+  rg_ntw_hub_we_001:
+    name: rg_ntw_hub_we_001
+    location_key: region1
+  rg_ntw_dev_we_001:
+    name: rg_ntw_dev_we_001
+    location_key: region1

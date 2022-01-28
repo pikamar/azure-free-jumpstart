@@ -1,0 +1,28 @@
+---
+- name: Set azure default region
+  set_fact:
+    az_default_regions: "{{ global_settings.locations[ global_settings.default_region ] }}"
+
+- name: Debug az_default_regions
+  debug: 
+    msg: "{{ az_default_regions }}"
+
+- name: Print RG variables
+  debug:
+    msg: |
+      --------------------------------
+      Group:  {{ item.key }}
+      Name:   {{ item.value.name }}
+      Region: {{ global_settings.locations[item.value.location_key] }}
+      ================================
+  with_dict: "{{ resourcegroup }}"
+
+- name: Resource Group Action [{{ rg_state }}]
+  azure_rm_resourcegroup:
+    name: "{{ item.value.name }}"
+    location: "{{ global_settings.locations[item.value.location_key] | default(az_default_regions) }}"
+    force_delete_nonempty: "{{ rg_force_delete_nonempty | default('no') }}"
+    state: "{{ rg_state | default('present') }}"
+  with_dict: "{{ resourcegroup }}"
+
+

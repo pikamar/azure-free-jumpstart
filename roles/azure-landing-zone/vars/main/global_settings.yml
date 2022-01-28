@@ -1,0 +1,10 @@
+---
+global_settings:
+  default_region: region1
+  locations:
+    region1: westeurope
+    region2: northeurope
+  azure:
+    subscription_id: ""
+    client_id: ""
+    tenent: ""
