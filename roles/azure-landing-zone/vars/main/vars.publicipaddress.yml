@@ -1,8 +1,8 @@
 ---
-public_ip_state: present
+publicipaddress_state: present
 
 # Configuration variables
-public_ip:
+publicipaddress:
   state:
     present: present
     absent: absent

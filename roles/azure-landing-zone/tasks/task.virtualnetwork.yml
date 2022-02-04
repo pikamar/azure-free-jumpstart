@@ -1,0 +1,22 @@
+---
+- name: Virtual Network Block
+  block:
+    - name: Print VNET variables
+      debug:
+        msg: |
+          --------------------------------
+          RG Key:               {{ virtualnetwork_vars.resource_group_key }}
+          RG Name:              {{ resourcegroup[ virtualnetwork_vars.resource_group_key ].name }}
+          VNET address space:   {{ virtualnetwork_vars.address_prefix_cidr }}
+          VNET Name:            {{ virtualnetwork_vars.name }}
+          ================================
+
+    - name: Virtual Network Action [{{ virtualnetwork_state }}]
+      azure_rm_virtualnetwork:
+        resource_group: "{{ resourcegroup[ virtualnetwork_vars.resource_group_key ].name }}"
+        name: "{{ virtualnetwork_vars.name }}"
+        address_prefixes_cidr: "{{ virtualnetwork_vars.address_prefix_cidr }}"
+        dns_servers: "{{ virtualnetwork_vars.dns_servers | default([]) }}"
+        tags: "{{ virtualnetwork_vars.tags | default({}) }}"
+        state: "{{ virtualnetwork_state | default('present') }}"
+  tags: virtualnetwork

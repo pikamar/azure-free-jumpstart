@@ -1,16 +1,16 @@
 ---
-bastion_state: present
+bastionhosts_state: present
 
-bastion_sku:
+bastionhosts_sku:
   basic: Basic
   standard: Standard
 
-bastion_resource_api:
+bastionhosts_resource_api:
   api_version: '2021-03-01'
   provider: Network
   resource_type: bastionHosts
 
-bastion_timers:
+bastionhosts_timers:
   create:
     delay: 60
     retries: 10
@@ -18,7 +18,7 @@ bastion_timers:
     delay: 60
     retries: 10
 
-bastions:
+bastionhosts:
   hub:
     resource_api: "{{ bastion_resource_api }}"
     resource_group_key: rg_ntw_hub_we_001

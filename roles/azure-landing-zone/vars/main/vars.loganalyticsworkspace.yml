@@ -1,5 +1,5 @@
 ---
-loganalytics_state: "present"
+loganalyticsworkspace_state: "present"
 loganalytics_force : no
 az_debug: true
 
@@ -22,7 +22,7 @@ loganalyticsworkspace:
 #      changed: false
 #      customer_id: 0737e820-5ae4-4032-ae6f-f1e5cfe214e6
 #      failed: false
-#      id: /subscriptions/123e8dcf-01be-4f6d-b18d-fdd89e62d672/resourcegroups/ops_re1/providers/microsoft.operationalinsights/workspaces/logs
+#      id: /subscriptions/***/resourcegroups/ops_re1/providers/microsoft.operationalinsights/workspaces/logs
 #      intelligence_packs:
 #      - enabled: false
 #        name: CapacityPerformance
@@ -222,8 +222,8 @@ loganalyticsworkspace:
 #      public_network_access_for_query: Enabled
 #      retention_in_days: 30
 #      shared_keys:
-#        primary_shared_key: rrXCJsGJZEnEig73AlA2RmPwspLgLTo/C4VEK1a2btrQPGdHGgueovdHaqzaqQP/OWya97No9KrvQMw/a5ceww==
-#        secondary_shared_key: fucCe1FQxdKIHGZRM7o1V9f5me78PKb6UZzx7xgbTOa4LlY9bEHrzlBuHsISb9NEkyUVcbg1WoOy4DOgrszsRw==
+#        primary_shared_key: ***
+#        secondary_shared_key: ***
 #      sku: pergb2018
 #      type: Microsoft.OperationalInsights/workspaces
 #      usages:

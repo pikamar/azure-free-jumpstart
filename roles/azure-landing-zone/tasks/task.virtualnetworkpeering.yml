@@ -1,0 +1,33 @@
+---
+- name: Virtual Network Block
+  block:
+    - name: Print VNET peering variables
+      debug:
+        msg: |
+          --------------------------------
+          Peering Name:         {{ virtualnetworkpeering_vars.name }}
+          VNET "From" Key:      {{ virtualnetworkpeering_vars.virtual_network_key }}
+          VNET "From" Name:     {{ virtualnetwork[ virtualnetworkpeering_vars.virtual_network_key ].name }}
+          VNET "To" Key:        {{ virtualnetworkpeering_vars.remote_virtual_network_key }}
+          VNET "To" Name:       {{ virtualnetwork[ virtualnetworkpeering_vars.remote_virtual_network_key ].name  }}
+          RG "From" Key:        {{ virtualnetwork[ virtualnetworkpeering_vars.virtual_network_key ].resource_group_key  }}
+          RG "From" Name:       {{ resourcegroup[ virtualnetwork[ virtualnetworkpeering_vars.virtual_network_key ].resource_group_key ].name }}
+          RG "To" Key:          {{ virtualnetwork[ virtualnetworkpeering_vars.remote_virtual_network_key ].resource_group_key }}
+          RG "To" Name:         {{ resourcegroup[ virtualnetwork[ virtualnetworkpeering_vars.remote_virtual_network_key ].resource_group_key ].name }}
+          ================================
+
+    - name: Virtual Network Peering Action [{{ virtualnetworkpeering_state }}]
+      azure_rm_virtualnetworkpeering:
+        resource_group: "{{ resourcegroup[ virtualnetwork[ virtualnetworkpeering_vars.virtual_network_key ].resource_group_key ].name }}"
+        virtual_network: "{{ virtualnetwork[ virtualnetworkpeering_vars.virtual_network_key ].name }}"
+        name: "{{ virtualnetworkpeering_vars.name }}"
+        remote_virtual_network:
+          resource_group: "{{ resourcegroup[ virtualnetwork[ virtualnetworkpeering_vars.remote_virtual_network_key ].resource_group_key ].name }}"
+          name: "{{ virtualnetwork[ virtualnetworkpeering_vars.remote_virtual_network_key ].name }}"
+        allow_virtual_network_access: "{{ virtualnetworkpeering_vars.allow_virtual_network_access | default(no) }}"
+        allow_forwarded_traffic: "{{ virtualnetworkpeering_vars.allow_forwarded_traffic | default(no) }}"
+        allow_gateway_transit: "{{ virtualnetworkpeering_vars.allow_gateway_transit | default(no) }}"
+        use_remote_gateways: "{{ virtualnetworkpeering_vars.use_remote_gateways | default(no) }}"
+        state: "{{ virtualnetworkpeering_state | default('present') }}"
+  tags: virtualnetworkpeering
+

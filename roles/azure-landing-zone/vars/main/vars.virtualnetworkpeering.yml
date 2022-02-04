@@ -1,0 +1,23 @@
+---
+virtualnetworkpeering_state: "present"
+
+virtualnetworkpeering:
+  vnetp_dev_to_hub:
+    name: vnetp_dev_to_hub
+    state: present
+    allow_forwarded_traffic: no
+    allow_gateway_transit: no
+    allow_virtual_network_access: yes
+    virtual_network_key: spoke_dev
+    remote_virtual_network_key: hub
+    use_remote_gateways: no
+  vnetp_hub_to_dev:
+    name: vnetp_hub_to_dev
+    state: present
+    allow_forwarded_traffic: yes
+    allow_gateway_transit: yes
+    allow_virtual_network_access: yes
+    virtual_network_key: hub
+    remote_virtual_network_key: spoke_dev
+    use_remote_gateways: no
+

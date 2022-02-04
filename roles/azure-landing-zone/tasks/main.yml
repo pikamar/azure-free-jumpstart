@@ -1,40 +1,95 @@
 ---
-- include_tasks: resourcegroup.yml
+- name: Create Resource Groups
+  include_tasks:
+    file: task.resourcegroup.yml
+  vars:
+    resourcegroup_vars: "{{ item.value }}"
+    resourcegroup_state: present
+  with_dict: "{{ resourcegroup }}"
   tags:
-    - free
     - resourcegroup
 
-- include_tasks: virtualnetwork.yml
+- name: Create LogAnalytics Workspace
+  include_tasks:
+    file: task.loganalyticsworkspace.yml
+  vars:
+    loganalyticsworkspace_vars: "{{ item.value }}"
+    loganalyticsworkspace_state: present
+  with_dict: "{{ loganalyticsworkspace }}"
   tags:
-    - free
+    - loganalyticsworkspace
+
+- name: Create Virtual Network
+  include_tasks:
+    file: task.virtualnetwork.yml
+  vars:
+    virtualnetwork_vars: "{{ item.value }}"
+    virtualnetwork_state: present
+  with_dict: "{{ virtualnetwork }}"
+  tags:
     - virtualnetwork
 
-- include_tasks: subnets.yml
+- name: Create Virtual Network Peering
+  include_tasks:
+    file: task.virtualnetworkpeering.yml
+  vars:
+    virtualnetworkpeering_vars: "{{ item.value }}"
+    virtualnetworkpeering_state: present
+  with_dict: "{{ virtualnetworkpeering }}"
   tags:
-    - free
-    - subnets
+    - virtualnetworkpeering
+
+- name: Create Subnets
+  include_tasks:
+    file: task.subnet.yml
+  vars:
+    subnet_vars: "{{ item.value }}"
+    subnet_state: present
+  with_dict: "{{ subnet }}"
+  tags:
+    - subnet
+
+- name: Create KeyVault
+  include_tasks:
+    file: task.keyvault.yml
+  vars:
+    keyvault_vars: "{{ keyvault.secrets }}"
+    keyvault_state: present
+  tags:
+    - keyvault
+
+- name: Create KeyVault Secrets
+  include_tasks:
+    file: task.keyvaultsecret.yml
+  vars:
+    keyvaultsecret_vars: "{{ item }}"
+    keyvaultsecret_vault_name: "{{ keyvault.secrets.vault_name }}"
+    keyvaultsecret_state: present
+  loop: "{{ keyvault.secrets.keyvaultsecret }}"
+  tags:
+    - keyvaultsecret
 
 - name: Create Public IP For Bastion Host
   include_tasks:
-    file: public_ip.yml
+    file: task.publicipaddress.yml
   vars:
-    public_ip_vars: "{{ bastions.hub }}"
-    public_ip_state: present
+    publicipaddress_vars: "{{ bastions.hub }}"
+    publicipaddress_state: present
   tags:
-    - public_ip
+    - publicipaddress
 
 - name: Create Bastion Host
   include_tasks:
-    file: bastion.yml
+    file: task.bastionhosts.yml
   vars:
-    bastion_vars: "{{ bastions.hub }}"
-    bastion_state: present
+    bastionhosts_vars: "{{ bastions.hub }}"
+    bastionhosts_state: present
   tags:
-    - bastion
+    - bastionhosts
 
 - name: Wait For Bastion Host To Be Deleted
   include_tasks:
-    file: wait.yml
+    file: task.wait.yml
   vars:
     wait_vars: "{{ bastions.hub }}"
     wait_status: "Succeeded"
@@ -45,9 +100,27 @@
 
 #- name: Create Public IP For Bastion Host
 #  include_tasks:
-#    file: public_ip.yml
+#    file: task.publicipaddress.yml
 #  vars:
-#    public_ip_vars: "{{ bastions.hub }}"
-#    public_ip_state: absent
+#    publicipaddress_vars: "{{ bastions.hub }}"
+#    publicipaddress_state: absent
 #  tags:
-#    - public_ip
+#    - publicipaddress
+
+- name: Create Virtual Machine
+  include_tasks:
+    file: task.virtualmachine.yml
+  vars:
+    virtualmachine_vars: "{{ virtualmachine.sandbox }}"
+    virtualmachine_state: present
+  tags:
+    - virtualmachine
+
+- name: Create Network Interfaces
+  include_tasks:
+    file: task.networkinterface.yml
+  vars:
+    networkinterface_vars: "{{ networkinterfaces.nic1 }}"
+    networkinterface_state: absent
+  tags:
+    - networkinterface

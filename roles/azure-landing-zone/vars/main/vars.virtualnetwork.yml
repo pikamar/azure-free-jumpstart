@@ -1,0 +1,28 @@
+---
+virtualnetwork_state: "present"
+
+virtualnetwork:
+  hub:
+    resource_group_key: rg_ntw_hub_we_001
+    location_key: region1
+    name: vnet_ntw_hub_we_001
+    state: present
+    purge_dns_servers: no
+    purge_address_prefixes: no
+    append_tags: yes
+    address_prefix_cidr:
+      - "10.1.0.0/16"
+    tags:
+      env: dev
+  spoke_dev:
+    resource_group_key: rg_ntw_dev_we_001
+    location_key: region1
+    name: vnet_ntw_dev_we_001
+    state: present
+    purge_dns_servers: no
+    purge_address_prefixes: no
+    append_tags: yes
+    address_prefix_cidr:
+      - "10.0.0.0/16"
+    tags:
+      env: dev

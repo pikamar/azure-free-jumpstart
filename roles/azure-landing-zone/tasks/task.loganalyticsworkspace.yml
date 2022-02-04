@@ -1,0 +1,30 @@
+---
+- name: KeyVault Secret Block
+  block:
+    - name: Log Analytics Action [{{ loganalytics_state }}]
+      azure_rm_loganalyticsworkspace:
+        resource_group: "{{ resourcegroup[ loganalyticsworkspace_vars.resource_group_key ].name }}"
+        name: "{{ loganalyticsworkspace_vars.name }}"
+        retention_in_days: "{{ loganalyticsworkspace_vars.retention_in_days }}"
+        intelligence_packs: "{{ loganalyticsworkspace_vars.intelligence_packs | default({}) }}"
+        sku: "{{ loganalyticsworkspace_vars.sku }}"
+        force: "{{ loganalytics_force | default(no) }}"
+        state: "{{ loganalyticsworkspace_state | default('present') }}"
+      register: loganalyticsworkspace_reg
+    #- debug: 
+    #    var: loganalyticsworkspace_reg
+    #  when:
+    #    az_debug is defined and az_debug == true
+    #
+    #- debug: 
+    #    var: loganalyticsworkspace_reg.results[0].id
+
+    #- name: insert a line at the beginning of the file, and back it up
+    #  lineinfile: 
+    #    dest: "{{ role_path }}/vars/main/log_analytics.runtime.yml"
+    #    state: present 
+    #    line: "workspaceId: {{ loganalyticsworkspace_res.results[0].id }}" 
+    #    insertbefore: "BOF" 
+    #    backup: no
+    #    create: yes
+  tags: loganalyticsworkspace

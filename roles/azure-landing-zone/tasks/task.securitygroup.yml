@@ -1,0 +1,19 @@
+---
+- name: SecurityGroup Block
+  block:
+    - name: Print NSG variables
+      debug:
+        msg: |
+          --------------------------------
+          NSG Name:             {{ securitygroup_vars.name }}
+          NSG RG:               {{ resourcegroup[ securitygroup_vars.resource_group_key ].name }}
+          NSG Rules:            {{ securitygroup_vars.rules  }}
+          ================================
+
+    - name: NSG Action [{{ securitygroup_state }}]
+      azure_rm_securitygroup: 
+        resource_group: "{{ resourcegroup[ securitygroup_vars.resource_group_key ].name }}"
+        name: "{{ securitygroup_vars.name  }}"
+        rules: "{{ securitygroup_vars.rules  }}"
+        state: "{{ securitygroup_state | default('present') }}"
+  tags: securitygroup

@@ -1,0 +1,64 @@
+---
+- name: Bastions Block
+  block:
+    #
+    # Get prerequisites
+    #
+
+    # Public IP ID
+    - name: Get facts For Bastion Public IP
+      azure_rm_publicipaddress_info:
+        resource_group: "{{ resourcegroup[ bastionhosts_var.resource_group_key ].name }}"
+        name: "{{ bastionhosts_var.public_ip_name }}"
+      register: public_ip_var
+      when: bastionhosts_state == "present"
+
+    - debug: 
+        var: public_ip_var.publicipaddresses[0].id
+      when: bastionhosts_state == "present"
+
+    # Subnet ID
+    - name: Get facts For Bastion Subnet
+      azure_rm_subnet_info:
+        resource_group: "{{ resourcegroup[ bastionhosts_var.resource_group_key ].name }}"
+        virtual_network_name: "{{ virtualnetwork[ subnet[ bastionhosts_var.subnet_key ].virtual_network_name_key ].name }}"
+        name: "{{ subnet[ bastionhosts_var.subnet_key ].name }}"
+      register: subnet_var
+      when: bastionhosts_state == "present"
+
+    - debug: 
+        var: subnet_var.subnets[0].id
+      when: bastionhosts_state == "present"
+
+    - name: Check mandatory variables are defined
+      assert:
+        that:
+          - public_ip_var.publicipaddresses[0].id is defined
+          - subnet_var.subnets[0].id is defined
+      when: bastionhosts_state == "present"
+
+    #
+    # Bastion host API call
+    # REST API: https://docs.microsoft.com/en-us/rest/api/virtualnetwork/bastion-hosts/create-or-update#subresource
+    - name: Bastion Host Action [{{ bastionhosts_state }}]
+      azure_rm_resource:
+        api_version: "{{ bastion_resource_api.api_version }}"
+        method: "{% if bastionhosts_state==\"present\" %}PUT{% else %}DELETE{% endif %}"
+        resource_group: "{{ resourcegroup[ bastionhosts_var.resource_group_key ].name }}"
+        provider: "{{ bastion_resource_api.provider }}"
+        resource_type: "{{ bastion_resource_api.resource_type }}"
+        resource_name: "{{ bastionhosts_var.resource_name }}"
+        body:
+          location: "{{ global_settings.locations[ bastionhosts_var.location_key | default(global_settings.default_region) ] }}"
+          sku:
+            name: "{{ bastionhosts_var.sku }}"
+          properties:
+            scaleUnits: "{{ bastionhosts_var.scaleUnits }}"
+            ipConfigurations:
+              - name: "{{ bastionhosts_var.public_ip_name }}"
+                properties: 
+                  publicIPAddress: 
+                    id: "{{ public_ip_var.publicipaddresses[0].id | default(\"none\") }}"
+                  subnet:
+                    id: "{{ subnet_var.subnets[0].id | default(\"none\") }}"
+  tags: bastions

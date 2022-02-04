@@ -1,0 +1,17 @@
+---
+- name: KeyVault Secret Block
+  block:
+    - name: Public IP Address Action [{{ publicipaddress_state }}]
+      azure_rm_publicipaddress:
+        resource_group: "{{ resourcegroup[ publicipaddress_vars.resource_group_key ].name }}"
+        name: "{{ publicipaddress_vars.publicipaddress_name }}"
+        allocation_method: "{{ publicipaddress_vars.publicipaddress_allocation_method | default('Dynamic') }}"
+        sku: "{{ publicipaddress_vars.publicipaddress_sku | default('Basic') }}"
+        domain_name: "{{ publicipaddress_vars.domain_name | default('') }}"
+        state: "{{ publicipaddress_state | default('present') }}"
+      register: publicipaddress_reg
+
+    - debug: 
+        var: publicipaddress_reg
+      when: publicipaddress_state == "present"
+  tags: publicipaddress

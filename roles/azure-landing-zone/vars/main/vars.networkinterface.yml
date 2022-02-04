@@ -1,0 +1,20 @@
+---
+networkinterface_state: "present"
+
+networkinterface_settings:
+  ip_configurations:
+    - name: ipconfig1
+
+# if private_ip_address in ip_configurations is set then need to specify 'private_ip_allocation_method: Static' as well, otherwise private ip will be set dynamically and to different value then specified.
+
+networkinterfaces:
+  nic1:
+    name: vmntwdevwets001-nic-01
+    resource_group_key: rg_ntw_dev_we_001
+    subnet_key: vnets_app_001
+    security_group: null
+    ip_configurations:
+      - name: ipconfig1
+        private_ip_address: 10.0.8.6
+        private_ip_allocation_method: Static
+        public_ip_address_name: vmntwdevwets001-pip-01

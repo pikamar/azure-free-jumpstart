@@ -1,0 +1,60 @@
+---
+- name: KeyVault Block
+  block:
+    #- name: Reload Runtime Variables
+    #  include_vars: dir=vars files_matching=.*.runtime.yml
+
+    - name: Print Keyvault variables
+      debug:
+        msg: |
+          --------------------------------
+          Keyvault RG:          {{ resourcegroup[ keyvault_vars.resource_group_key ].name }}
+          Keyvault Name:        {{ keyvault_vars.vault_name }}
+          Keyvault SKU:         {{ keyvault_vars.sku }}
+          ================================
+
+    - name: Key Vault Action [{{ keyvault_state }}]
+      azure_rm_keyvault:
+        resource_group: "{{ resourcegroup[ keyvault_vars.resource_group_key ].name }}"
+        vault_name: "{{ keyvault_vars.vault_name }}"
+        enable_soft_delete: "{{ keyvault_vars.enable_soft_delete  | default(no) }}"
+        enabled_for_deployment: "{{ keyvault_vars.enabled_for_deployment  | default(no) }}"
+        enabled_for_disk_encryption : "{{ keyvault_vars.enabled_for_disk_encryption  | default(no) }}"
+        enabled_for_template_deployment: "{{ keyvault_vars.enabled_for_template_deployment  | default(no) }}"
+        recover_mode: "{{ keyvault_vars.recover_mode  | default(no) }}"
+        sku: "{{ keyvault_vars.sku }}"
+        state: "{{ keyvault_state | default('present') }}"
+        vault_tenant: "{{ ansible_env['AZURE_TENANT'] | default(global_settings.azure.tenent ) }}"
+        access_policies: "{{ keyvault_vars.access_policies }}"
+
+    # TODO: configure diagnostics out of this play
+    #- name: Configure Key Vault Diagnostics
+    #  azure_rm_resource:
+    #    api_version: '2021-05-01-preview'
+    #    resource_group: "{{ resourcegroup[ keyvault_vars.resource_group_key ].name }}"
+    #    provider: KeyVault
+    #    resource_type: vaults
+    #    resource_name: "{{ keyvault_vars.vault_name }}/providers/Microsoft.Insights/diagnosticSettings/KeyVault-Diagnostics"
+    #    body:
+    #      properties:
+    #        logs:
+    #        - categoryGroup: allLogs
+    #          enabled: true
+    #        workspaceId: "{{ workspaceId }}"
+    #  when: keyvault_state == "present"
+    #
+    #- name: Get Key Vault info
+    #  azure_rm_resource_info:
+    #    api_version: '2021-05-01-preview'
+    #    resource_group: "{{ resourcegroup[ keyvault_vars.resource_group_key ].name }}"
+    #    provider: KeyVault
+    #    resource_type: vaults
+    #    resource_name: "{{ keyvault_vars.vault_name }}/providers/Microsoft.Insights/diagnosticSettings/KeyVault-Diagnostics"
+    #  register: kvault_info
+    #  when: az_kv_debug is defined and az_kv_debug == true and keyvault_state == present
+    #
+    #- debug:
+    #    var: kvault_info
+    #  when: az_kv_debug is defined and az_kv_debug == true and keyvault_state == present
+  tags:
+    - keyvault

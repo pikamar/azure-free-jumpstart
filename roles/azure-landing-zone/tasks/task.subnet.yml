@@ -1,0 +1,36 @@
+---
+- name: SecurityGroup Block
+  block:
+    - name: Print Subnet variables
+      debug:
+        msg: |
+          --------------------------------
+          Subnet Name:            {{ subnet_vars.name  }}
+          Subnet CIDR:            {{ subnet_vars.address_prefix_cidr }}
+          Subnet VNET Key:        {{ subnet_vars.virtual_network_name_key }}
+          Subnet VNET Name:       {{ virtualnetwork[ subnet_vars.virtual_network_name_key ].name }}
+          Subnet RG Key:          {{ virtualnetwork[ subnet_vars.virtual_network_name_key ].resource_group_key }}
+          Subnet RG Name:         {{ resourcegroup[ virtualnetwork[ subnet_vars.virtual_network_name_key ].resource_group_key ].name }}
+          Subnet NSG Key:         {{ subnet_vars.security_group_key | default() }}
+          ================================
+
+    - name: Create Security Groups
+      include_tasks:
+        file: task.securitygroup.yml
+      vars:
+        securitygroup_vars:
+          resource_group_key: "{{ virtualnetwork[ subnet_vars.virtual_network_name_key ].resource_group_key }}"
+          name: "{{ securitygroup[ subnet_vars.security_group_key | default() ].name }}"
+          rules: "{{ securitygroup[ subnet_vars.security_group_key | default() ].rules }}"
+        securitygroup_state: "{{ subnet_state | default('present') }}"
+      when: subnet_vars.security_group_key is defined
+
+    - name: Subnet Action [{{ subnet_state }}]
+      azure_rm_subnet:
+        resource_group: "{{ resourcegroup[ virtualnetwork[ subnet_vars.virtual_network_name_key ].resource_group_key ].name }}"
+        virtual_network_name: "{{ virtualnetwork[ subnet_vars.virtual_network_name_key ].name }}"
+        name: "{{ subnet_vars.name }}"
+        address_prefix_cidr: "{{ subnet_vars.address_prefix_cidr }}"
+        security_group: "{{ securitygroup[ subnet_vars['security_group_key'] | default() ].name  | default() }}"
+        state: "{{ subnet_state | default('present') }}"
+  tags: subnet

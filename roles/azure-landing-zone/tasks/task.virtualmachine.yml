@@ -1,0 +1,90 @@
+---
+- name: Virtual Machine Block
+  vars:
+    runtime_varsA:
+      resource_group: "{{ resourcegroup[ virtualmachine.resource_group_key ].name }}"
+      name: "{{ virtualmachine.name }}"
+      vm_size: "{{ virtualmachine.vm_size | default(((virtualmachine.priority | default(virtualmachine_settings.priority.none)) == 'None') | ternary('Standard_B1s', 'Standard_A1_v2')) }}"
+      priority: "{{ virtualmachine.priority | default(virtualmachine_settings.priority.none) }}"
+      eviction_policy: "{{ virtualmachine.eviction_policy | default(virtualmachine_settings.eviction_policy.deallocate) }}"
+      admin_username: "{{ virtualmachine.admin_username | default('devops') }}"
+      boot_diagnostics: "{{ virtualmachine.boot_diagnostics | default(virtualmachine_settings.boot_diagnostics) }}"
+      os_disk_size_gb: "{{ virtualmachine.os_disk_size_gb | default(virtualmachine_disk_types.managed_disk_type.size.gb_32) }}"
+      ephemeral_os_disk: "{{ virtualmachine.ephemeral_os_disk | default('no') }}"
+      managed_disk_type: "{{ virtualmachine.managed_disk_type | default(virtualmachine_disk_types.managed_disk_type.hdd) }}"
+      image: "{{ virtualmachine.image | default(((virtualmachine.os_type | default(virtualmachine_settings.os_type.linux)) == 'Linux') | ternary(virtualmachine_settings.default_image.linux, virtualmachine_settings.default_image.windows)) }}"
+      os_type: "{{ virtualmachine.os_type | default(virtualmachine_settings.os_type.linux) }}"
+      zones: "{{ virtualmachine.zones | default([]) }}"
+      data_disks: "{{ virtualmachine.data_disks | default([]) }}"
+      public_ip_allocation_method: "{{ virtualmachine.public_ip_allocation_method | default(virtualmachine_settings.public_ip_allocation_method.disabled) }}"
+      license_type: "{{ virtualmachine.license_type | default(virtualmachine_settings.license_type.win_server) }}"
+      inventory_hostname: "{{ inventory_hostname }}"
+    runtime_varsB: # Second group of vars to reuse calculated vars from previous group
+      os_disk_name: "{{ runtime_varsA.name }}-osdsk-0"
+    runtime_vars: "{{ runtime_varsA | combine(runtime_varsB) }}"
+  block:
+    - name: Print Runtime Variables
+      debug: msg="{{ runtime_vars }}"
+    
+    - name: Get admin password from a keyvault by reference
+      azure.azcollection.azure_rm_keyvaultsecret_info:
+        vault_uri: "https://{{ virtualmachine.admin_password.split('.')[1] }}.vault.azure.net"
+        name: "{{ virtualmachine.admin_password.split('.')[2] }}"
+      when: (virtualmachine.admin_password is defined and '__keyvault__' in virtualmachine.admin_password)
+      register: admin_password
+
+    #- debug: msg={{ admin_password.secrets[0].secret | default() }}
+
+    # virtual_network_resource_group 
+    # virtual_network_name
+    # subnet_name
+    # public_ip_allocation_method 
+    # network_interface_names
+    # ssh_public_keys 
+    # ssh_password_enabled 
+    # os_type 
+    # os_disk_caching 
+    # availability_set
+    - name: Create a Linux VM
+      azure_rm_virtualmachine:
+        resource_group: "{{ runtime_vars.resource_group }}"
+        name: "{{ runtime_vars.name }}"
+        vm_size: "{{ runtime_vars.vm_size }}"
+        priority: "{{ runtime_vars.priority }}"
+        eviction_policy: "{{ runtime_vars.eviction_policy }}"
+        admin_username: "{{ runtime_vars.admin_username }}"
+        admin_password: "{{ admin_password.secrets[0].secret | default(lookup('password', '/dev/null', seed=inventory_hostname)) }}"
+        boot_diagnostics: "{{ runtime_vars.boot_diagnostics }}"
+        os_disk_name: "{{ runtime_vars.os_disk_name }}"
+        os_disk_size_gb: "{{ runtime_vars.os_disk_size_gb }}"
+        ephemeral_os_disk: "{{ runtime_vars.ephemeral_os_disk }}"
+        managed_disk_type: "{{ runtime_vars.managed_disk_type }}"
+        image: "{{ runtime_vars.image }}"
+        zones: "{{ runtime_vars.zones }}"
+        data_disks: "{{ runtime_vars.data_disks }}"
+        public_ip_allocation_method: "{{ runtime_vars.public_ip_allocation_method }}"
+        state: "{{ virtualmachine_state }}"
+      when: (runtime_vars.os_type == 'Linux')
+
+    - name: Create a Windows VM
+      azure_rm_virtualmachine:
+        resource_group: "{{ runtime_vars.resource_group }}"
+        name: "{{ runtime_vars.name }}"
+        vm_size: "{{ runtime_vars.vm_size }}"
+        priority: "{{ runtime_vars.priority }}"
+        eviction_policy: "{{ runtime_vars.eviction_policy }}"
+        admin_username: "{{ runtime_vars.admin_username }}"
+        admin_password: "{{ admin_password.secrets[0].secret | default(lookup('password', '/dev/null', seed=inventory_hostname)) }}"
+        boot_diagnostics: "{{ runtime_vars.boot_diagnostics }}"
+        os_disk_name: "{{ runtime_vars.os_disk_name }}"
+        os_disk_size_gb: "{{ runtime_vars.os_disk_size_gb }}"
+        ephemeral_os_disk: "{{ runtime_vars.ephemeral_os_disk }}"
+        managed_disk_type: "{{ runtime_vars.managed_disk_type }}"
+        image: "{{ runtime_vars.image }}"
+        license_type: "{{ runtime_vars.license_type }}"
+        zones: "{{ runtime_vars.zones }}"
+        data_disks: "{{ runtime_vars.data_disks }}"
+        public_ip_allocation_method: "{{ runtime_vars.public_ip_allocation_method }}"
+        state: "{{ virtualmachine_state }}"
+      when: (runtime_vars.os_type == 'Windows')
+  tags: virtualmachine

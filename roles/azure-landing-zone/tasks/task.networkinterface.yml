@@ -1,0 +1,61 @@
+---
+- name: Network Interface Block
+  vars:
+    runtime_varsA:
+      name: "{{ networkinterface_vars.name }}"
+      resource_group: "{{ resourcegroup[ networkinterface_vars.resource_group_key ].name }}"
+      subnet_name: "{{ subnet[ networkinterface_vars.subnet_key ].name }}"
+      security_group: # Use security group associated with a subnet
+        name: "{{ securitygroup[ subnet[ networkinterface_vars.subnet_key ].security_group_key ].name | default() }}"
+        resource_group: "{{ resourcegroup[ virtualnetwork[ subnet[ networkinterface_vars.subnet_key ].virtual_network_name_key ].resource_group_key ].name | default() }}"
+      virtual_network: "{{ virtualnetwork[ subnet[ networkinterface_vars.subnet_key ].virtual_network_name_key ].name | default() }}"
+      dns_servers: "{{ networkinterface_vars.dns_servers | default([]) }}"
+      enable_accelerated_networking: "{{ networkinterface_vars.enable_accelerated_networking | default(false) }}"
+      enable_ip_forwarding: "{{ networkinterface_vars.enable_ip_forwarding | default(false) }}"
+      os_type: "{{ networkinterface_vars.os_type | default('Linux') }}"
+      create_with_security_group: "{{ networkinterface_vars.create_with_security_group | default(true) }}"
+      ip_configurations: "{{ networkinterface_vars.ip_configurations | default(networkinterface_settings.ip_configurations) }}"
+    runtime_varsB: # Second group of vars to reuse calculated vars from previous group
+      security_group: "{{ networkinterface_vars.security_group | default(runtime_varsA.security_group) }}" # create default security group, if value is set to null. Or associate with existing one in the same resource group.
+    runtime_vars: "{{ runtime_varsA | combine(runtime_varsB) }}"
+  block:
+    - name: Print Runtime Variables
+      debug: msg="{{ runtime_vars }}"
+
+    - name: Network Interface Action [{{ networkinterface_state }}]
+      azure_rm_networkinterface:
+        name: "{{ runtime_vars.name }}"
+        resource_group: "{{ runtime_vars.resource_group }}"
+        subnet_name: "{{ runtime_vars.subnet_name }}"
+        virtual_network: "{{ runtime_vars.virtual_network }}"
+        security_group: "{{ runtime_vars.security_group }}"
+        dns_servers: "{{ runtime_vars.dns_servers }}"
+        enable_accelerated_networking: "{{ runtime_vars.enable_accelerated_networking }}"
+        enable_ip_forwarding: "{{ runtime_vars.enable_ip_forwarding }}"
+        os_type: "{{ runtime_vars.os_type }}"
+        create_with_security_group: "{{ runtime_vars.create_with_security_group }}"
+        ip_configurations: "{{ runtime_vars.ip_configurations }}"
+        state: "{{ networkinterface_state }}"
+
+    # networkinterface_state == absent is not deleteing ip if it was created during networkinterface_state == present.
+    - name: Delete public IP
+      include_tasks:
+        file: public_ip.yml
+      vars:
+        public_ip_vars:
+          resource_group_key: "{{ networkinterface_vars.resource_group_key }}"
+          public_ip_name: "{{ item.public_ip_address_name }}"
+        public_ip_state: absent
+      loop: "{{ runtime_vars.ip_configurations }}"
+      when: (networkinterface_state == "absent" and item.public_ip_address_name is defined)
+
+    # If create_with_security_group is true and security_group is "", then nsg with an nic name will be created, bet not deleted on networkinterface_state == absent
+    # This is workaroud to do explicite delete
+    - name: Delete default NSG
+      azure_rm_securitygroup: 
+        resource_group: "{{ runtime_vars.resource_group }}"
+        name: "{{ runtime_vars.name }}"
+        state: absent
+      when: (networkinterface_state == "absent" and runtime_vars.create_with_security_group is true and runtime_vars.security_group == "")
+
+  tags: networkinterface

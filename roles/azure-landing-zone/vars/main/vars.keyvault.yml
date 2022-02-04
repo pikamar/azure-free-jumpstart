@@ -4,14 +4,18 @@ az_kv_debug: false
 
 keyvault:
   secrets:
-    resource_group_key: aks_re1
-    vault_name: copsvault
+    resource_group_key: rg_ntw_dev_we_001
+    vault_name: kvntwdevwe001
     location_key: region1
     enable_soft_delete: no
-    enabled_for_deployment : no
-    enabled_for_disk_encryption : no
-    enabled_for_template_deployment: no
+    enabled_for_deployment : yes
+    enabled_for_disk_encryption : yes
+    enabled_for_template_deployment: yes
     recover_mode: no
+    # Add some default secrets to keyvault
+    keyvaultsecret:
+      - secret_name: admin-dev-password
+        secret_value: "{{ lookup('password', '/dev/null', seed=inventory_hostname) }}"
     sku:
       name: standard
     access_policies:
@@ -30,13 +34,3 @@ keyvault:
           - delete
           - purge
           - recover
-#      - object_id: ingress
-#        secrets:
-#          - get
-#        certificates:
-#          - get
-#      - object_id: apgw_keyvault_secrets
-#        secrets:
-#          - get
-#        certificates:
-#          - get

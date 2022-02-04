@@ -1,5 +1,5 @@
 ---
-nsg_state: "present"
+securitygroup_state: "present"
 
 securitygroup:
   app_nsg:

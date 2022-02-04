@@ -1,0 +1,96 @@
+---
+virtualmachine_state: present
+
+virtualmachine_disk_types:
+  managed_disk_type:
+    hdd: Standard_LRS
+    ssd: StandardSSD_LRS
+    premium: Premium_LRS
+    size:
+      gb_4:   4
+      gb_8:   8
+      gb_16:  16
+      gb_32:  32
+      gb_64:  64
+      gb_128: 128
+      gb_256: 256
+      gb_512: 512
+      tb_1:   1024
+
+virtualmachine_disk_caching:
+  readonly: ReadOnly # default
+  readwrite: ReadWrite
+
+virtualmachine_settings:
+  boot_diagnostics:
+    enabled: no
+  admin_username: devops
+  data_disks:
+    caching: "{{ virtualmachine_disk_caching }}"
+    managed_disk_type: "{{ virtualmachine_disk_types }}"
+  eviction_policy: # Specifies the eviction policy for the Azure Spot virtual machine. Requires priority to be set to Spot.
+    deallocate: Deallocate
+    delete: Delete
+  #generalized:
+  #  no: no # default
+  #  yes: yes
+  license_type:
+    none: None
+    win_server: Windows_Server
+    win_client: Windows_Client
+  public_ip_allocation_method:
+    dynamic: Dynamic
+    static: Static
+    disabled: Disabled
+  managed_os_disk_type: "{{ virtualmachine_disk_types }}"
+  os_disk_caching: "{{ virtualmachine_disk_caching }}"
+  os_type:
+    linux: Linux # default
+    win: Windows
+  priority:
+    none: None # Regular VM
+    spot: Spot
+  default_image:
+    linux:
+      offer: CentOS
+      publisher: OpenLogic
+      sku: '8.0'
+      version: latest
+    windows:
+      offer: Windows
+      publisher: Microsoft
+      sku: '2019'
+      version: latest
+
+virtualmachine:
+  jumpbox:
+    name: vmntwdevwets001
+    resource_group_key: rg_ntw_dev_we_001
+    vm_size: Standard_A1_v2
+    admin_username: "{{ vm_settings.admin_username }}"
+    admin_password: __keyvault__.kvntwdevwe001.admin-dev-password
+    network_interfaces: testvm001
+    priority: "{{ vm_settings.priority.spot }}"
+    eviction_policy: "{{ vm_settings.eviction_policy.deallocate }}"
+    os_disk_size_gb: "{{ vm_disk_types.managed_disk_type.size.gb_32 }}"
+    ephemeral_os_disk: no
+    image:
+      offer: CentOS
+      publisher: OpenLogic
+      sku: '8.0'
+      version: latest
+    data_disks:
+      - lun: 0
+        disk_size_gb: "{{ vm_disk_types.managed_disk_type.size.gb_4 }}"
+        managed_disk_type: "{{ vm_disk_types.managed_disk_type.hdd }}"
+      - lun: 1
+        disk_size_gb: "{{ vm_disk_types.managed_disk_type.size.gb_4 }}"
+        managed_disk_type: "{{ vm_disk_types.managed_disk_type.hdd }}"
+  sandbox:
+    name: vmntwdevwets002
+    resource_group_key: rg_ntw_dev_we_001
+    networkinterfaces:
+      nic1:
+        name: vmntwdevwets001-nic-01
+        resource_group_key: rg_ntw_dev_we_001
+        subnet_key: vnets_app_001
